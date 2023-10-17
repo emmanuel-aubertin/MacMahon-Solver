@@ -3,3 +3,7 @@
 *.dSYM
 
 MacMahon
+
+*.out
+
+*.bin

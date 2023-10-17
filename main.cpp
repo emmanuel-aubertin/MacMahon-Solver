@@ -4,16 +4,25 @@
 /*----- Contact :       https://athomisos.fr                                        ****/
 /***************************************************************************************/
 
+// ANSI escape codes for text color
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+
+
 #include <iostream>
 #include <string.h>
 #include <fstream>
 #include <stdlib.h>
+#include "MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;
 std::string RELEASE="Revision 1.0 | Last update 17 october 2023";
 std::string AUTHOR="\033[1mAubertin Emmanuel\033[0m";
-std::string COPYRIGHT="(c) 2021 "+ AUTHOR + " from https://athomisos.fr";
+std::string COPYRIGHT="(c) 2023 "+ AUTHOR + " from https://athomisos.fr";
 bool VERBOSE = false;
 
 
@@ -50,7 +59,7 @@ void failure(std::string message){
 int main(int argc,char** argv){
     std::cout << "🤗  |Welcome in \033[1m" << PROGNAME << "\033[0m mode| 🤗" << std::endl; print_release(); std::cout << std::endl << std::endl;
     std::string filename = "";
-    if(argc < 1) // number of arg minimum 
+    if(argc < 2) // number of arg minimum 
 		failure("One argument required. \n\t-h for help");
 
     for(int i = 1; i < argc; i++){
@@ -68,7 +77,7 @@ int main(int argc,char** argv){
             if(!file.good()) {
                 failure("File not found: " + filename);
             }
-            std::cout << " ✔ | \033[1mFile successfuly load\033[0m | ✔ " << std::endl;
+            std::cout << " ✔ | \033[1mFile successfuly load\033[0m | ✔ " << std::endl << std::endl;
         } else { // ALL OTHER ARGUMENT
             print_usage();
             std::string arg = argv[i];
@@ -77,7 +86,13 @@ int main(int argc,char** argv){
         }
     }
 
+    MacMahonGame myGame =  MacMahonGame(filename);
+
+    myGame.print();
+    
+    
 
 
     return 0;
-    }
+}
+
