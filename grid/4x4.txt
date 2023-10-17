@@ -1,0 +1,17 @@
+4 4
+R G B R
+G B B R
+B B B B
+B B B B
+R R R B
+R G R B
+B B G B
+B B G B
+B B R B
+B R B B
+B R B B
+B B G G
+R B B R
+G G R G
+R B B B
+G B R G
