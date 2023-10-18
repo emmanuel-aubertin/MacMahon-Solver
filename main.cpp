@@ -35,9 +35,9 @@ void print_usage() {
         std::cout << std::endl 
         << PROGNAME << " by " << AUTHOR << std::endl 
         << "\033[1mUsage: \033[0m"<< FILE_NAME <<" | [-h | --help] | [-v | --version] | [-V | --verbose] & [-f | --file] filename" << std::endl
-        << "          -h        help" << std::endl
-        << "          -v        Version" << std::endl
-        << "          -v        Verbose" << std::endl
+        << "          -h            help" << std::endl
+        << "          -v            Version" << std::endl
+        << "          -v            Verbose" << std::endl
         << "          -f filename  'number.txt' by default" << std::endl;
 }
 
@@ -90,8 +90,10 @@ int main(int argc,char** argv){
 
     myGame.print();
     
-    
+    myGame.solve(0, 0);
+    std::cout << "-----------------------------------------------------------------------------------" << std::endl << std::endl;
 
+    myGame.printResult();
 
     return 0;
 }

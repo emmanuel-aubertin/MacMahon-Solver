@@ -4,8 +4,8 @@
 
 struct Tile {
     std::string top, right, bottom, left;
-
-    Tile(std::string t = " ", std::string r = " ", std::string b = " ", std::string l = " ") 
+    bool used = false;
+    Tile(std::string l = " ", std::string t = " ", std::string r = " ", std::string b = " ") 
         : top(t), right(r), bottom(b), left(l) {}
 };
 
@@ -14,19 +14,22 @@ struct Tile {
 class MacMahonGame {
 public:
     MacMahonGame(const std::string &filename);
-
-    bool isSafe(int row, int col, const Tile &tile) const;
+    bool solve();
+    bool isSafe(int row, int col, const Tile &tile);
     void placeTile(int row, int col, const Tile &tile);
     void removeTile(int row, int col);
-    
+    bool solve(int row, int col);
     void print();
+    void printResult();
 private:
     int rows, cols;
-    std::vector<Tile> grid;
+    void print(std::vector<Tile> inGrid);
+    std::vector<Tile> grid, result;
     int getIdexFromCoord(int x, int y);
     std::vector<Tile> parseTilesFromFile(const std::string &filename);
     std::vector<std::string> split(const std::string &s,  char delimiter);
     std::string getColorCode(std::string c);
     void printTile(int index);
+    bool isBorderCorrect();
 };
 
