@@ -7,7 +7,7 @@ clean:
 
 compiler:
 	@printf "\e[32m--------| \e[1;32mCompilation of all your .cpp\e[0m\e[32m |--------\e[0m\n\n"
-	g++ -std=c++17  -O3 MacMahonGame.cpp main.cpp -o out.bin
+	g++ -std=c++17  -O3 src/MacMahonGame/MacMahonGame.cpp  main.cpp -o out.bin
 	@printf "\e[32m\tDONE\e[0m\n"
 
 test:   compiler
@@ -17,6 +17,6 @@ test:   compiler
 
 stat: 
 	@printf "\e[32m--------| \e[1;32mCompilation of all your .cpp\e[0m\e[32m |--------\e[0m\n\n"
-	g++ -std=c++17  -O3 get_stat.cpp MacMahonGame.cpp -o out.bin
+	g++ -std=c++17 -O3 get_stat.cpp src/MacMahonGame/MacMahonGame.cpp -o out.bin
 	@printf "\e[32m\tDONE\e[0m\n"
 .PHONY = all clean

@@ -19,7 +19,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
-#include "MacMahonGame.hpp"
+#include "src/MacMahonGame/MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;
@@ -62,7 +62,7 @@ int main(int argc,char** argv){
                     game.printResult();
                     printed = true;
                 }
-                std::chrono::duration<double> duration = end - start;
+                std::chrono::duration<double, std::milli> duration = end - start;
                 if( result ) times.push_back(duration.count());
             } catch (const std::exception &e) {
                 failure("Error processing file "+ filePath + ": "+ e.what());

@@ -17,7 +17,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
-#include "MacMahonGame.hpp"
+#include "src/MacMahonGame/MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;

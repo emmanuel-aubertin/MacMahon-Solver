@@ -7,3 +7,5 @@ MacMahon
 *.out
 
 *.bin
+
+*.gch

@@ -25,11 +25,11 @@ private:
     std::vector<Tile> grid;
     std::vector< std::vector<Tile> > result; 
     int getIndexFromCoord(int x, int y);
-    std::vector<Tile> parseTilesFromFile(const std::string &filename);
     std::vector<std::string> split(const std::string &s,  char delimiter);
     std::string getColorCode(char);
     void printTile(int index);
-    bool isBorderCorrect();
+    std::vector<char> convertToCharVector(const std::vector<std::string>& strVec);
     std::vector<Tile> flatten(const std::vector<std::vector<Tile>>& ) ;
+    bool solve_multi_thread(int row, int col);
 };
 
