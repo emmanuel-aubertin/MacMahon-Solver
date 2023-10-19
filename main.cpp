@@ -93,18 +93,14 @@ int main(int argc,char** argv){
     
     auto start = std::chrono::high_resolution_clock::now();
 
-    myGame.solve(0, 0);
+    bool result = myGame.solve(0, 0);
 
     auto end = std::chrono::high_resolution_clock::now();
-
-
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-   
+    std::chrono::duration<double, std::milli> duration = end - start;
 
     std::cout << "-----------------------------------------------------------------------------------" << std::endl << std::endl;
 
-    myGame.printResult();
+    if (result) myGame.printResult();
     std::cout << "Time taken by myGame.solve(0, 0): " << duration.count() << " microseconds" << std::endl;
 
     return 0;
