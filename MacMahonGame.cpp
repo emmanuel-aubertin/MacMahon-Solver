@@ -4,6 +4,8 @@
 #include <sstream>
 #include <unordered_map>
 
+//#define DEBUG
+
 MacMahonGame::MacMahonGame(const std::string &filename){
     std::ifstream file(filename);
     std::string line;
@@ -149,20 +151,20 @@ void MacMahonGame::print( std::vector<Tile> inGrid){
 
 bool MacMahonGame::isSafe(int row, int col, const Tile &tile) {
     // Check top of tile
-    if(row > 0 && result[getIdexFromCoord(row-1, col)].bottom != " " && result[getIdexFromCoord(row-1, col)].bottom != tile.top) return false;
+    if(row > 0 && result[getIdexFromCoord(row-1, col)].used && result[getIdexFromCoord(row-1, col)].bottom != " " && result[getIdexFromCoord(row-1, col)].bottom != tile.top) return false;
     // Check left of tile
-    if(col > 0 && result[getIdexFromCoord(row, col-1)].right != " " && result[getIdexFromCoord(row, col-1)].right != tile.left) return false;
+    if(col > 0 && result[getIdexFromCoord(row, col-1)].used && result[getIdexFromCoord(row, col-1)].right != " " && result[getIdexFromCoord(row, col-1)].right != tile.left) return false;
     // Check bottom of tile
-    if(row < rows - 1 && result[getIdexFromCoord(row+1, col)].top != " " && result[getIdexFromCoord(row+1, col)].top != tile.bottom) return false;
+    if(row < rows - 1 && result[getIdexFromCoord(row+1, col)].used && result[getIdexFromCoord(row+1, col)].top != " " && result[getIdexFromCoord(row+1, col)].top != tile.bottom) return false;
     // Check bottom of tile
-    if(col < cols - 1 && result[getIdexFromCoord(row, col+1)].left != " " && result[getIdexFromCoord(row, col+1)].left != tile.right) return false;
-
+    if(col < cols - 1 && result[getIdexFromCoord(row, col+1)].used && result[getIdexFromCoord(row, col+1)].left != " " && result[getIdexFromCoord(row, col+1)].left != tile.right) return false;
+/*
     // if border tile
-    /*if (row == 0 && tile.top != "B") return false;
-    if (row == rows-1 && tile.bottom != "B") return false;
-    if (col == 0 && tile.left != "B") return false;
-    if (col == cols-1 && tile.right != "B") return false;*/
-
+    if (row == 0 && result[0].top != " " && tile.top != result[0].top) return false;
+    if (row == rows-1 && result[0].top != " " && tile.bottom !=  result[0].top) return false;
+    if (col == 0 && result[0].top != " " && tile.left !=  result[0].top) return false;
+    if (col == cols-1 && result[0].top != " " && tile.right != result[0].top) return false;
+*/
     return true;
 }
 
@@ -180,15 +182,20 @@ bool MacMahonGame::isBorderCorrect() {
 
 
 bool MacMahonGame::solve(int row, int col) {
-   if (row == rows-1 && col == cols) return isBorderCorrect();
-    int i = 0;
-    std::cout  << std::endl<< "TESTING: " << row << ", " << col  << std::endl;
+    if (row == rows && col == cols-1) return true;
+    #ifdef DEBUG
+        int i = 0;
+        std::cout  << std::endl<< "TESTING: " << row << ", " << col  << std::endl;
+    #endif
     for (Tile& tile : grid) {
-        std::cout << i << " ";
-        i++;
+        #ifdef DEBUG
+            std::cout << i << " ";
+            i++;
+        #endif
         if (!tile.used && isSafe(row, col, tile)) {
-            placeTile(row, col, tile);
             tile.used = true;
+            placeTile(row, col, tile);
+            
 
             int nextRow,nextCol;
             if(col == cols-1) {
@@ -205,10 +212,11 @@ bool MacMahonGame::solve(int row, int col) {
 
             // Backtrack
             tile.used = false;
-            //removeTile(row, col);
         }
     }
-    std::cout << std::endl << "FAIL: " << row << ", " << col  << std::endl;
+    #ifdef DEBUG
+        std::cout << std::endl << "FAIL: " << row << ", " << col  << std::endl;
+    #endif
 
     return false;
 }
