@@ -25,7 +25,7 @@ private:
     int rows, cols;
     void print(std::vector<Tile> inGrid);
     std::vector<Tile> grid, result;
-    int getIdexFromCoord(int x, int y);
+    int getIndexFromCoord(int x, int y);
     std::vector<Tile> parseTilesFromFile(const std::string &filename);
     std::vector<std::string> split(const std::string &s,  char delimiter);
     std::string getColorCode(std::string c);

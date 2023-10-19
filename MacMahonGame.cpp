@@ -35,14 +35,14 @@ MacMahonGame::MacMahonGame(const std::string &filename){
 }
 
 void MacMahonGame::placeTile(int row, int col, const Tile &tile) {
-    this->result[getIdexFromCoord(row, col)] = tile;
+    this->result[getIndexFromCoord(row, col)] = tile;
 }
 
 void MacMahonGame::removeTile(int row, int col) {
-    this->result[getIdexFromCoord(row, col)] = Tile(" ", " ", " ", " ");
+    this->result[getIndexFromCoord(row, col)] = Tile(" ", " ", " ", " ");
 }
 
-int MacMahonGame::getIdexFromCoord(int x, int y){
+int MacMahonGame::getIndexFromCoord(int x, int y){
     return this->rows * x + y;
 }
 
@@ -150,47 +150,59 @@ void MacMahonGame::print( std::vector<Tile> inGrid){
 
 
 bool MacMahonGame::isSafe(int row, int col, const Tile &tile) {
-    // Check top of tile
-    if(row > 0 && result[getIdexFromCoord(row-1, col)].used && result[getIdexFromCoord(row-1, col)].bottom != " " && result[getIdexFromCoord(row-1, col)].bottom != tile.top) return false;
-    // Check left of tile
-    if(col > 0 && result[getIdexFromCoord(row, col-1)].used && result[getIdexFromCoord(row, col-1)].right != " " && result[getIdexFromCoord(row, col-1)].right != tile.left) return false;
-    // Check bottom of tile
-    if(row < rows - 1 && result[getIdexFromCoord(row+1, col)].used && result[getIdexFromCoord(row+1, col)].top != " " && result[getIdexFromCoord(row+1, col)].top != tile.bottom) return false;
-    // Check bottom of tile
-    if(col < cols - 1 && result[getIdexFromCoord(row, col+1)].used && result[getIdexFromCoord(row, col+1)].left != " " && result[getIdexFromCoord(row, col+1)].left != tile.right) return false;
-/*
-    // if border tile
-    if (row == 0 && result[0].top != " " && tile.top != result[0].top) return false;
-    if (row == rows-1 && result[0].top != " " && tile.bottom !=  result[0].top) return false;
-    if (col == 0 && result[0].top != " " && tile.left !=  result[0].top) return false;
-    if (col == cols-1 && result[0].top != " " && tile.right != result[0].top) return false;
-*/
+    if(row == 0 && col == 0 && tile.top != tile.left){
+        return false;
+    }
+    if(result[0].used){
+        if(row == 0 && tile.top != result[0].top) return false;
+
+        if(col == 0 && tile.left != result[0].top) return false;
+
+        if(row == rows-1 && tile.bottom != result[0].top) return false;
+
+        if(col == cols-1 && tile.right != result[0].top) return false;
+    }
+
+    if(row -1 >= 0){
+        if(tile.top != result[getIndexFromCoord(row-1, col)].bottom) return false;
+    }
+
+    if(col -1 >= 0){
+        if(tile.left != result[getIndexFromCoord(row, col-1)].right) return false;
+    }
+
     return true;
 }
 
 bool MacMahonGame::isBorderCorrect() {
     for(int col = 0; col < cols; ++col) {
-        if(grid[getIdexFromCoord(0, col)].top != grid[0].top) return false;
-        if(grid[getIdexFromCoord(rows-1, col)].bottom != grid[0].top) return false;
+        if(result[getIndexFromCoord(0, col)].top != result[0].top) return false;
+        if(result[getIndexFromCoord(rows-1, col)].bottom != result[0].top) return false;
     }
+    
     for(int row = 0; row < rows; ++row) {
-        if(grid[getIdexFromCoord(row, 0)].left != grid[0].top) return false;
-        if(grid[getIdexFromCoord(row, cols-1)].right != grid[0].top) return false;
+        if(result[getIndexFromCoord(row, 0)].left != result[0].top) return false;
+        if(result[getIndexFromCoord(row, cols-1)].right != result[0].top) return false;
     }
     return true;
 }
 
 
 bool MacMahonGame::solve(int row, int col) {
-    if (row == rows && col == cols-1) return true;
+    //if (row == rows && col == cols-1) return isBorderCorrect();
+
+    // && col == cols-1
+    if (row == rows) return true;
     #ifdef DEBUG
         int i = 0;
-        std::cout  << std::endl<< "TESTING: " << row << ", " << col  << std::endl;
+        std::cout  << std::endl<< "TESTING: " << row << ", " << col  << std::endl << "\t";
     #endif
     for (Tile& tile : grid) {
         #ifdef DEBUG
-            std::cout << i << " ";
-            i++;
+            if(col == 0 && row == 0) {
+                std::cout << i << " ";
+                i++;
+            }
         #endif
         if (!tile.used && isSafe(row, col, tile)) {
             tile.used = true;

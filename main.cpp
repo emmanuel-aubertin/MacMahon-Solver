@@ -16,6 +16,7 @@
 #include <string.h>
 #include <fstream>
 #include <stdlib.h>
+#include <chrono>
 #include "MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
@@ -90,10 +91,21 @@ int main(int argc,char** argv){
 
     myGame.print();
     
+    auto start = std::chrono::high_resolution_clock::now();
+
     myGame.solve(0, 0);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+   
+
     std::cout << "-----------------------------------------------------------------------------------" << std::endl << std::endl;
 
     myGame.printResult();
+    std::cout << "Time taken by myGame.solve(0, 0): " << duration.count() << " microseconds" << std::endl;
 
     return 0;
 }
