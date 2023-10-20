@@ -6,19 +6,17 @@
 
 //#define DEBUG
 
-/**
- * @brief Convert vector string to vector char
- * 
- * @param strVec 
- * @return std::vector<char> 
- */
 std::vector<char> MacMahonGame::convertToCharVector(const std::vector<std::string>& strVec) {
     std::vector<char> charVec;
+
+    // Calculate total characters
     size_t totalChars = 0;
     for (const auto& str : strVec) {
         totalChars += str.size();
     }
     charVec.reserve(totalChars);
+
+    // Populate charVec using std::copy
     for (const auto& str : strVec) {
         std::copy(str.begin(), str.end(), std::back_inserter(charVec));
     }
@@ -26,11 +24,6 @@ std::vector<char> MacMahonGame::convertToCharVector(const std::vector<std::strin
     return charVec;
 }
 
-/**
- * @brief Construct a new Mac Mahon Game:: Mac Mahon Game object from file
- * 
- * @param filename 
- */
 MacMahonGame::MacMahonGame(const std::string &filename){
     std::ifstream file(filename);
     std::string line;
@@ -44,8 +37,8 @@ MacMahonGame::MacMahonGame(const std::string &filename){
     }
 
     this->grid = std::vector<Tile>();
-    this->rows = std::stoi(vectLine[0]);
-    this->cols = std::stoi(vectLine[1]);
+    this->cols = std::stoi(vectLine[0]);
+    this->rows = std::stoi(vectLine[1]);
 
     for(int i = 0; i < rows; i++) {
         std::vector<Tile> row;
@@ -111,19 +104,12 @@ std::string MacMahonGame::getColorCode(char c) {
     }
 }
 
-/**
- * @brief Cast from vector of vector to vector
- * 
- * @param matrix 
- * @return std::vector<Tile> 
- */
 std::vector<Tile> MacMahonGame::flatten(const std::vector<std::vector<Tile>>& matrix) {
     std::vector<Tile> result;
-    size_t totalTiles = 0;
-    for (const auto& row : matrix) {
-        totalTiles += row.size();
-    }
-    result.reserve(totalTiles);
+
+    result.reserve(rows*cols);
+
+    // Flatten the matrix into the result vector
     for (const auto& row : matrix) {
         result.insert(result.end(), row.begin(), row.end());
     }
@@ -131,23 +117,9 @@ std::vector<Tile> MacMahonGame::flatten(const std::vector<std::vector<Tile>>& ma
     return result;
 }
 
-/**
- * @brief Print all tiles
- * 
- */
 void MacMahonGame::print(){ print(grid);}
-
-/**
- * @brief Print result of all solve
- * 
- */
 void MacMahonGame::printResult(){ print(flatten(result));}
 
-/**
- * @brief Beautiful print all tiles
- * 
- * @param inGrid 
- */
 void MacMahonGame::print( std::vector<Tile> inGrid){
     const int rows_dips = 5;
     for(int row = 0; row < rows; ++row){
@@ -203,86 +175,59 @@ void MacMahonGame::print( std::vector<Tile> inGrid){
      
 }
 
-/**
- * @brief Know if a place respect rules for a tiles
- * 
- * @param row 
- * @param col 
- * @param tile 
- * @return true It's safe mate
- * @return false Only fuck we've got a situation Roger
- */
-bool MacMahonGame::isSafe(int row, int col, const Tile &tile) {
-    if(row == 0 && col == 0 && tile.top != tile.left){
-        return false;
-    }
-    
-    if(result[0][0].used){
-        if(row == 0 && tile.top != result[0][0].top) return false;
 
-        if(col == 0 && tile.left != result[0][0].top) return false;
+bool MacMahonGame::isSafe(int row, int col, const Tile &tile) {
+    if(result[0][0].used){
+        if(row == 0){
+            if(tile.top != result[0][0].top) return false;
+        } else {
+            if(tile.top != result[row-1][ col].bottom) return false;
+        }
+
+        if(col == 0 ){
+            if(tile.left != result[0][0].top) return false;
+        } else {
+            if(tile.left != result[row][col-1].right) return false;
+        }
 
         if(row == rows-1 && tile.bottom != result[0][0].top) return false;
 
         if(col == cols-1 && tile.right != result[0][0].top) return false;
-    }
-
-    if(row -1 >= 0){
-        if(tile.top != result[row-1][ col].bottom) return false;
-    }
-
-    if(col -1 >= 0){
-        if(tile.left != result[row][ col-1].right) return false;
+    } else if(row == 0 && col == 0 && tile.top != tile.left){
+        return false;
     }
 
     return true;
 }
+/*
+bool MacMahonGame::isBorderCorrect() {
+    for(int col = 0; col < cols; ++col) {
+        if(result[0][col].top != result[0][0].top) return false;
+        if(result[rows-1][col].bottom != result[0][0].top) return false;
+    }
+    
+    for(int row = 0; row < rows; ++row) {
+        if(result[row][0].left != result[0][0].top) return false;
+        if(result[row][cols-1].right != result[0][0].top) return false;
+    }
+    return true;
+}*/
 
-/**
- * @brief Backtracking algorithm to solve MacMahon problem
- * 
- * @param row Use 0 to launch the algorithm
- * @param col Use 0 to launch the algorithm
- * @return true 
- * @return false 
- */
+
 bool MacMahonGame::solve(int row, int col) {
     if (row == rows) return true;
-    int nextRow = (col == cols-1) ? row + 1 : row;
-    int nextCol = (col == cols-1) ? 0 : col + 1;
-    for (Tile& tile : grid) {
-        if (!tile.used && isSafe(row, col, tile)) {
-            tile.used = true;
-            this->result[row][col] = tile;
-            if (solve(nextRow, nextCol)) {
-                return true;
-            }
-            // Backtrack
-            tile.used = false;
-        }
+    int nextRow = row;
+    int nextCol =  0;
+    if(col == cols-1){
+        ++nextRow;
+    } else {
+        nextCol = col + 1; 
     }
-    return false;
-}
-
-/**
- * @brief Oula en chantier camarade
- * 
- * @param row 
- * @param col 
- * @return true 
- * @return false 
- */
-bool MacMahonGame::solve_multi_thread(int row, int col) {
-    if (row == rows) return true;
-    int nextRow = (col == cols-1) ? row + 1 : row;
-    int nextCol = (col == cols-1) ? 0 : col + 1;
     for (Tile& tile : grid) {
         if (!tile.used && isSafe(row, col, tile)) {
             tile.used = true;
             this->result[row][col] = tile;
-            if (solve(nextRow, nextCol)) {
-                return true;
-            }
+            if (solve(nextRow, nextCol)) return true;
             // Backtrack
             tile.used = false;
         }

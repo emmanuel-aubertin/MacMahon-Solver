@@ -19,7 +19,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
-#include "src/MacMahonGame/MacMahonGame.hpp"
+#include "MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;
@@ -45,8 +45,8 @@ int main(int argc,char** argv){
     std::cout << std::endl << std::endl;
     
     const std::string directoryPath = "./grid/";
-    const int iterations = 50;
-    
+    const int iterations = 10000;
+    std::vector<std::string> allAverage;
     for (const auto & entry : std::filesystem::directory_iterator(directoryPath)) {
         std::string filePath = entry.path().string();
         bool printed = false;
@@ -62,7 +62,7 @@ int main(int argc,char** argv){
                     game.printResult();
                     printed = true;
                 }
-                std::chrono::duration<double, std::milli> duration = end - start;
+                std::chrono::duration<long double, std::milli> duration = end - start;
                 if( result ) times.push_back(duration.count());
             } catch (const std::exception &e) {
                 failure("Error processing file "+ filePath + ": "+ e.what());
@@ -71,10 +71,13 @@ int main(int argc,char** argv){
         }
        
 
-        double averageTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
-        std::cout << "Average time for file " << filePath << ": " << averageTime << " ms" << std::endl;
+        long double averageTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+        allAverage.push_back( "Average time for file " + filePath + ": " + std::to_string(averageTime) + " ms");
     }
-
+    std::cout << "Ran " << std::to_string(iterations) << " test iterations " << std::endl;
+    for(std::string e : allAverage){
+        std::cout << e << std::endl;
+    }
     return 0;
 }
 

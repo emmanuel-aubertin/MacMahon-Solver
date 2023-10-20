@@ -17,7 +17,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
-#include "src/MacMahonGame/MacMahonGame.hpp"
+#include "MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;
@@ -100,7 +100,12 @@ int main(int argc,char** argv){
 
     std::cout << "-----------------------------------------------------------------------------------" << std::endl << std::endl;
 
-    if (result) myGame.printResult();
+    if (result){
+        myGame.printResult();
+    } else {
+        std::cout << "No solution found !" << std::endl;
+    }
+
     std::cout << "Time taken by myGame.solve(0, 0): " << duration.count() << " microseconds" << std::endl;
 
     return 0;
