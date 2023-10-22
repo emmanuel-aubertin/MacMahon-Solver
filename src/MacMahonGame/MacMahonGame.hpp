@@ -1,6 +1,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <atomic> 
+#include "../ThreadPool/ThreadPool.hpp"
 
 struct Tile {
     char top, right, bottom, left;
@@ -20,7 +22,10 @@ public:
     bool solve_thread();
     void print();
     void printResult();
+    std::atomic<bool> solution_found;
 private:
+    
+    bool solve_thread_engin(int row, int col, ThreadPool &pool);
     int rows, cols;
     void print(std::vector<Tile> inGrid);
     std::vector<Tile> grid;

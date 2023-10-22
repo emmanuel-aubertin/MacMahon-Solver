@@ -5,6 +5,9 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <functional>   // Include for std::function
+#include <atomic>       // Include for std::atomic
+#include <condition_variable>  // Include for std::condition_variable
 #include "ThreadPool.hpp"
 
 ThreadPool::ThreadPool(uint32_t thread_number) {

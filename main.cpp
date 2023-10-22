@@ -107,7 +107,7 @@ int main(int argc,char** argv){
     }
 
     std::cout << "Time taken by myGame.solve(0, 0): " << duration.count() << " microseconds" << std::endl;
-
+    std::cout << myGame.solution_found << std::endl;
     return 0;
 }
 
