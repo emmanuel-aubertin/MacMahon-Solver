@@ -19,7 +19,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
-#include "MacMahonGame.hpp"
+#include "src/MacMahonGame/MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;
@@ -56,7 +56,7 @@ int main(int argc,char** argv){
             try {
                 MacMahonGame game(filePath);
                 auto start = std::chrono::high_resolution_clock::now();
-                bool result = game.solve(0, 0); // Assuming the puzzle starts from (0, 0)
+                bool result = game.solve_thread(); // Assuming the puzzle starts from (0, 0)
                 auto end = std::chrono::high_resolution_clock::now();
                 if(!printed){
                     game.printResult();
@@ -72,6 +72,7 @@ int main(int argc,char** argv){
        
 
         long double averageTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+        std::cout << averageTime << std::endl;
         allAverage.push_back( "Average time for file " + filePath + ": " + std::to_string(averageTime) + " ms");
     }
     std::cout << "Ran " << std::to_string(iterations) << " test iterations " << std::endl;

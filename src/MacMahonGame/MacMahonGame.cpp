@@ -1,9 +1,11 @@
 #include "MacMahonGame.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
-
+#include <mutex>
+#include "../ThreadPool/ThreadPool.hpp"
 //#define DEBUG
 
 std::vector<char> MacMahonGame::convertToCharVector(const std::vector<std::string>& strVec) {
@@ -107,11 +109,12 @@ std::string MacMahonGame::getColorCode(char c) {
 std::vector<Tile> MacMahonGame::flatten(const std::vector<std::vector<Tile>>& matrix) {
     std::vector<Tile> result;
 
-    result.reserve(rows*cols);
-
     // Flatten the matrix into the result vector
     for (const auto& row : matrix) {
-        result.insert(result.end(), row.begin(), row.end());
+        for(const auto& col : row) {
+        result.push_back(col);
+        }
+        
     }
 
     return result;
@@ -177,28 +180,27 @@ void MacMahonGame::print( std::vector<Tile> inGrid){
 
 
 bool MacMahonGame::isSafe(int row, int col, const Tile &tile) {
-    if(result[0][0].used){
-        if(row == 0){
-            if(tile.top != result[0][0].top) return false;
-        } else {
-            if(tile.top != result[row-1][ col].bottom) return false;
-        }
+    // If the top-left tile is used, it will be our reference
+    if (result[0][0].used) {
+        if (row == 0 && tile.top != result[0][0].top) return false;
 
-        if(col == 0 ){
-            if(tile.left != result[0][0].top) return false;
-        } else {
-            if(tile.left != result[row][col-1].right) return false;
-        }
+        if (row != 0 && tile.top != result[row-1][col].bottom) return false;
 
-        if(row == rows-1 && tile.bottom != result[0][0].top) return false;
+        if (col == 0 && tile.left != result[0][0].top) return false;
+        
+        if (col != 0 && tile.left != result[row][col-1].right) return false;
+        
+        if (row == rows-1 && tile.bottom != result[0][0].top) return false;
 
-        if(col == cols-1 && tile.right != result[0][0].top) return false;
-    } else if(row == 0 && col == 0 && tile.top != tile.left){
+        if (col == cols-1 && tile.right != result[0][0].top) return false;
+    } 
+    
+    if (!result[0][0].used && row == 0 && col == 0 && tile.top != tile.left) {
         return false;
     }
-
     return true;
 }
+
 /*
 bool MacMahonGame::isBorderCorrect() {
     for(int col = 0; col < cols; ++col) {
@@ -213,16 +215,12 @@ bool MacMahonGame::isBorderCorrect() {
     return true;
 }*/
 
-
+// Optimiser g++ 
+// Profiler gprof gnu
 bool MacMahonGame::solve(int row, int col) {
     if (row == rows) return true;
-    int nextRow = row;
-    int nextCol =  0;
-    if(col == cols-1){
-        ++nextRow;
-    } else {
-        nextCol = col + 1; 
-    }
+    int nextRow = (col == cols-1) ? row + 1 : row;
+    int nextCol = (col == cols-1) ? 0 : col + 1;
     for (Tile& tile : grid) {
         if (!tile.used && isSafe(row, col, tile)) {
             tile.used = true;
@@ -233,4 +231,49 @@ bool MacMahonGame::solve(int row, int col) {
         }
     }
     return false;
+    
 }
+
+bool MacMahonGame::solve_thread(){
+    std::mutex solution_mutex;  // For synchronizing access to shared state, e.g., solutions
+
+    ThreadPool pool(4);  // Use a thread pool with a specified number of threads
+    std::atomic<bool> solution_found = false;
+    for(Tile& startingTile : grid) {
+        pool.addJob([&startingTile, this, &solution_found, &pool]() {
+            std::cout << "Running thread" << std::endl;
+            if (!startingTile.used && isSafe(0, 0, startingTile)) {
+                startingTile.used = true;
+                this->result[0][0] = startingTile;
+               std::cout << "RECURTION" << std::endl;
+                if (solve(0, 1)){
+                    std::cout << "SOLUTION FOUND" << std::endl;
+                    std::lock_guard<std::mutex> lock(pool.mutex_queue);
+                    solution_found = true;
+                    
+                    return ;
+                }
+                
+                // Backtrack
+                startingTile.used = false;
+            }
+            std::cout << "Nothing for this tile" << std::endl;
+            //std::lock_guard<std::mutex> unlock(solution_mutex);
+            return ;
+        });
+    }
+    pool.start(); // Start
+    // Wait until all tasks are completed
+    while(pool.isPoolBusy()) {
+        //std::cout << "Waiting for" << std::endl;
+        if (solution_found){
+           // printResult();
+            pool.stop();
+            return true; //
+        } 
+
+    }
+    return false;
+}
+
+// BFS a multihtrader plus tard
