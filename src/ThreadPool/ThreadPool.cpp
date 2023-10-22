@@ -20,6 +20,7 @@ ThreadPool::ThreadPool(uint32_t thread_number) {
 
 void ThreadPool::start() {
     for(uint32_t i = 0; i < thread_number; i++){
+        std::cout << "Thread " << i << std::endl;
         worker_thread.push_back(std::thread(&ThreadPool::ThreadPoolEngine, this));
     }
 }

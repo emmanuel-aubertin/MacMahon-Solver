@@ -221,8 +221,9 @@ bool MacMahonGame::solve(int row, int col) {
 
     
     if (row == rows) return true;
+    std::cout << "Solving " << row << ", " << col << std::endl;
     /*if(row > 4){
-        std::cout << "Solving " << row << ", " << col << std::endl;
+        
     }*/
     int nextRow = (col == cols-1) ? row + 1 : row;
     int nextCol = (col == cols-1) ? 0 : col + 1;
@@ -248,6 +249,7 @@ bool MacMahonGame::solve_thread(){
     for(Tile& startingTile : grid) {
         
         pool.addJob([&startingTile, this, &pool]() {
+            std::cout << "New job: " << std::endl;
             if (!startingTile.used && isSafe(0, 0, startingTile)) {
                 startingTile.used = true;
                 this->result[0][0] = startingTile;
@@ -257,7 +259,7 @@ bool MacMahonGame::solve_thread(){
                     solution_found = true;
                     //std::terminate();
                     //pool.stop();
-                    //std::lock_guard<std::mutex> lock(pool.mutex_queue);
+                    std::lock_guard<std::mutex> lock(pool.mutex_queue);
                     
                     
                     return ;
