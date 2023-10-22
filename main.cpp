@@ -99,7 +99,7 @@ int main(int argc,char** argv){
     std::chrono::duration<double, std::milli> duration = end - start;
 
     std::cout << "-----------------------------------------------------------------------------------" << std::endl << std::endl;
-
+    myGame.printResult();
     if (result){
         myGame.printResult();
     } else {

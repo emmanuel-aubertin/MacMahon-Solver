@@ -12,18 +12,18 @@ class ThreadPool
 {
     private:
         vector <thread> worker_thread;
-        
+
         condition_variable mutex_condition;
         uint32_t thread_number;
-        std::atomic<bool> stop_thread = false;
-
+        std::atomic<bool> stop_thread;
+queue< function<void()> > jobs_queue;
         void ThreadPoolEngine(); // While true listen for events in jobs queue
     public:
-        queue< function<void()> > jobs_queue;
+        ~ThreadPool();
         mutex mutex_queue;
         ThreadPool(uint32_t);
         void stop();
         void start();
-        void addJob(std::function<void()>);
+        void addJob(const std::function<void()>&);
         bool isPoolBusy();
 };

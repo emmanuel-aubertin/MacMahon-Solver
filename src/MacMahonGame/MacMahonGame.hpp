@@ -18,13 +18,14 @@ public:
     MacMahonGame(const std::string &filename);
     bool solve();
     bool isSafe(int row, int col, const Tile &tile);
+
     bool solve(int row, int col);
     bool solve_thread();
     void print();
     void printResult();
     std::atomic<bool> solution_found;
 private:
-    
+    bool solve_thread(int row, int col,ThreadPool& pool, std::mutex& solution_mutex);
     bool solve_thread_engin(int row, int col, ThreadPool &pool);
     int rows, cols;
     void print(std::vector<Tile> inGrid);
