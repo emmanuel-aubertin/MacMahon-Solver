@@ -19,7 +19,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
-#include "MacMahonGame.hpp"
+#include "src/MacMahonGame/MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;
@@ -45,7 +45,7 @@ int main(int argc,char** argv){
     std::cout << std::endl << std::endl;
     
     const std::string directoryPath = "./grid/";
-    const int iterations = 10000;
+    const int iterations = 1000;
     std::vector<std::string> allAverage;
     for (const auto & entry : std::filesystem::directory_iterator(directoryPath)) {
         std::string filePath = entry.path().string();
@@ -56,14 +56,15 @@ int main(int argc,char** argv){
             try {
                 MacMahonGame game(filePath);
                 auto start = std::chrono::high_resolution_clock::now();
-                bool result = game.solve(0, 0); // Assuming the puzzle starts from (0, 0)
+                bool result = game.solve_thread(); // Assuming the puzzle starts from (0, 0)
                 auto end = std::chrono::high_resolution_clock::now();
                 if(!printed){
                     game.printResult();
                     printed = true;
                 }
                 std::chrono::duration<long double, std::milli> duration = end - start;
-                if( result ) times.push_back(duration.count());
+                std::cout <<  duration.count() << "ms" << std::endl;
+                if( result && duration.count()) times.push_back(duration.count());
             } catch (const std::exception &e) {
                 failure("Error processing file "+ filePath + ": "+ e.what());
                 break;
@@ -72,6 +73,7 @@ int main(int argc,char** argv){
        
 
         long double averageTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+        std::cout << averageTime << std::endl;
         allAverage.push_back( "Average time for file " + filePath + ": " + std::to_string(averageTime) + " ms");
     }
     std::cout << "Ran " << std::to_string(iterations) << " test iterations " << std::endl;

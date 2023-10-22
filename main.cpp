@@ -17,7 +17,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
-#include "MacMahonGame.hpp"
+#include "src/MacMahonGame/MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
 std::string FILE_NAME= __FILE__;
@@ -93,13 +93,13 @@ int main(int argc,char** argv){
     
     auto start = std::chrono::high_resolution_clock::now();
 
-    bool result = myGame.solve(0, 0);
+    bool result = myGame.solve_thread();
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
 
     std::cout << "-----------------------------------------------------------------------------------" << std::endl << std::endl;
-
+    myGame.printResult();
     if (result){
         myGame.printResult();
     } else {
@@ -107,7 +107,7 @@ int main(int argc,char** argv){
     }
 
     std::cout << "Time taken by myGame.solve(0, 0): " << duration.count() << " microseconds" << std::endl;
-
+    std::cout << myGame.solution_found << std::endl;
     return 0;
 }
 

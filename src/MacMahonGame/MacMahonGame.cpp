@@ -1,9 +1,10 @@
 #include "MacMahonGame.hpp"
+#include <atomic>   // Include for std::atomic
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
-
+#include <mutex>
 //#define DEBUG
 
 std::vector<char> MacMahonGame::convertToCharVector(const std::vector<std::string>& strVec) {
@@ -25,6 +26,7 @@ std::vector<char> MacMahonGame::convertToCharVector(const std::vector<std::strin
 }
 
 MacMahonGame::MacMahonGame(const std::string &filename){
+    solution_found = false;
     std::ifstream file(filename);
     std::string line;
     if (!std::getline(file, line)) {
@@ -107,11 +109,12 @@ std::string MacMahonGame::getColorCode(char c) {
 std::vector<Tile> MacMahonGame::flatten(const std::vector<std::vector<Tile>>& matrix) {
     std::vector<Tile> result;
 
-    result.reserve(rows*cols);
-
     // Flatten the matrix into the result vector
     for (const auto& row : matrix) {
-        result.insert(result.end(), row.begin(), row.end());
+        for(const auto& col : row) {
+        result.push_back(col);
+        }
+        
     }
 
     return result;
@@ -177,28 +180,27 @@ void MacMahonGame::print( std::vector<Tile> inGrid){
 
 
 bool MacMahonGame::isSafe(int row, int col, const Tile &tile) {
-    if(result[0][0].used){
-        if(row == 0){
-            if(tile.top != result[0][0].top) return false;
-        } else {
-            if(tile.top != result[row-1][ col].bottom) return false;
-        }
+    // If the top-left tile is used, it will be our reference
+    if (result[0][0].used) {
+        if (row == 0 && tile.top != result[0][0].top) return false;
 
-        if(col == 0 ){
-            if(tile.left != result[0][0].top) return false;
-        } else {
-            if(tile.left != result[row][col-1].right) return false;
-        }
+        if (row != 0 && tile.top != result[row-1][col].bottom) return false;
 
-        if(row == rows-1 && tile.bottom != result[0][0].top) return false;
+        if (col == 0 && tile.left != result[0][0].top) return false;
+        
+        if (col != 0 && tile.left != result[row][col-1].right) return false;
+        
+        if (row == rows-1 && tile.bottom != result[0][0].top) return false;
 
-        if(col == cols-1 && tile.right != result[0][0].top) return false;
-    } else if(row == 0 && col == 0 && tile.top != tile.left){
+        if (col == cols-1 && tile.right != result[0][0].top) return false;
+    } 
+    
+    if (!result[0][0].used && row == 0 && col == 0 && tile.top != tile.left) {
         return false;
     }
-
     return true;
 }
+
 /*
 bool MacMahonGame::isBorderCorrect() {
     for(int col = 0; col < cols; ++col) {
@@ -213,16 +215,18 @@ bool MacMahonGame::isBorderCorrect() {
     return true;
 }*/
 
-
+// Optimiser g++ 
+// Profiler gprof gnu
 bool MacMahonGame::solve(int row, int col) {
+
+    
     if (row == rows) return true;
-    int nextRow = row;
-    int nextCol =  0;
-    if(col == cols-1){
-        ++nextRow;
-    } else {
-        nextCol = col + 1; 
-    }
+    //std::cout << "Solving " << row << ", " << col << std::endl;
+    /*if(row > 4){
+        
+    }*/
+    int nextRow = (col == cols-1) ? row + 1 : row;
+    int nextCol = (col == cols-1) ? 0 : col + 1;
     for (Tile& tile : grid) {
         if (!tile.used && isSafe(row, col, tile)) {
             tile.used = true;
@@ -233,4 +237,67 @@ bool MacMahonGame::solve(int row, int col) {
         }
     }
     return false;
+    
 }
+
+
+bool MacMahonGame::solve_thread(int row, int col, ThreadPool& pool, std::mutex& solution_mutex ) {
+
+    if (row == rows) solution_found.store(true);
+
+    int nextRow = (col == cols-1) ? row + 1 : row;
+    int nextCol = (col == cols-1) ? 0 : col + 1;
+    
+    for (Tile& tile : grid) {
+        pool.addJob([&tile, this, &solution_mutex, nextRow,  nextCol, row, col, &pool]() {
+            
+            if (!tile.used && isSafe(row, col, tile)) {
+                tile.used = true;
+                result[row][col] = tile;
+                solve_thread(nextRow, nextCol, pool, solution_mutex);
+                if (solution_found.load()) {
+                    std::lock_guard<std::mutex> lock(solution_mutex);
+                    return true;
+                } 
+                tile.used = false;
+            }
+            return false;
+        });
+    }
+    return false;
+}
+
+bool MacMahonGame::solve_thread() {
+
+    std::mutex solution_mutex;  
+    ThreadPool pool(std::thread::hardware_concurrency()); 
+
+    for(Tile& startingTile : grid) {
+        pool.addJob([&startingTile, this, &solution_mutex, &pool]() {
+            std::lock_guard<std::mutex> lock(solution_mutex); 
+            if (!startingTile.used && isSafe(0, 0, startingTile)) {
+                startingTile.used = true;
+                this->result[0][0] = startingTile; // tente un truc avec une copie de résult
+                if (solve_thread(0, 1, pool, solution_mutex)) {
+                    //std::cout << "SOLUTION FOUND" << std::endl;
+                    solution_found.store(true);
+                    return;
+                }
+                startingTile.used = false;
+            }
+            return;
+        });
+    }
+    
+    pool.start();
+    while (!solution_found.load()) {
+        if (!pool.isPoolBusy()) {
+            pool.stop();
+            return solution_found.load();
+        }
+    }
+    pool.stop();
+    return solution_found.load();
+}
+
+// BFS a multihtrader plus tard
