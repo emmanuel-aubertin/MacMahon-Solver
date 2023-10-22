@@ -221,9 +221,9 @@ bool MacMahonGame::solve(int row, int col) {
 
     
     if (row == rows) return true;
-    if(row > 4){
+    /*if(row > 4){
         std::cout << "Solving " << row << ", " << col << std::endl;
-    }
+    }*/
     int nextRow = (col == cols-1) ? row + 1 : row;
     int nextCol = (col == cols-1) ? 0 : col + 1;
     for (Tile& tile : grid) {
@@ -243,17 +243,17 @@ bool MacMahonGame::solve(int row, int col) {
 bool MacMahonGame::solve_thread(){
     std::mutex solution_mutex;  // For synchronizing access to shared state, e.g., solutions
 
-    ThreadPool pool(16);  // Use a thread pool with a specified number of threads
-    std::cout << "Number of thread = " << std::thread::hardware_concurrency() << std::endl;
+    ThreadPool pool(std::thread::hardware_concurrency());  // Use a thread pool with a specified number of threads
+   // std::cout << "Number of thread = " << std::thread::hardware_concurrency() << std::endl;
     for(Tile& startingTile : grid) {
+        
         pool.addJob([&startingTile, this, &pool]() {
-            //std::cout << "Running thread" << std::endl;
             if (!startingTile.used && isSafe(0, 0, startingTile)) {
                 startingTile.used = true;
                 this->result[0][0] = startingTile;
                //std::cout << "RECURTION" << std::endl;
                 if (solve(0, 1)){
-                    std::cout << "SOLUTION FOUND" << std::endl;
+                    //std::cout << "SOLUTION FOUND" << std::endl;
                     solution_found = true;
                     //std::terminate();
                     //pool.stop();
@@ -275,11 +275,11 @@ bool MacMahonGame::solve_thread(){
     while(!solution_found) {
         if (pool.jobs_queue.empty()) {
             pool.stop();
-            return false; // No solution found
+            return solution_found; // No solution found
         }
     }
     pool.stop();
-    return true;
+    return solution_found;
 }
 
 // BFS a multihtrader plus tard

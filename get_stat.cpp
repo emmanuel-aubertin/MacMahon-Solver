@@ -45,7 +45,7 @@ int main(int argc,char** argv){
     std::cout << std::endl << std::endl;
     
     const std::string directoryPath = "./grid/";
-    const int iterations = 10000;
+    const int iterations = 450;
     std::vector<std::string> allAverage;
     for (const auto & entry : std::filesystem::directory_iterator(directoryPath)) {
         std::string filePath = entry.path().string();
@@ -63,6 +63,7 @@ int main(int argc,char** argv){
                     printed = true;
                 }
                 std::chrono::duration<long double, std::milli> duration = end - start;
+                std::cout <<  duration.count() << "ms" << std::endl;
                 if( result ) times.push_back(duration.count());
             } catch (const std::exception &e) {
                 failure("Error processing file "+ filePath + ": "+ e.what());
