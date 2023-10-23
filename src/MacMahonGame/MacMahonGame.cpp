@@ -242,27 +242,24 @@ bool MacMahonGame::solve(int row, int col) {
 
 
 bool MacMahonGame::solve_thread(int row, int col, ThreadPool& pool, std::mutex& solution_mutex ) {
-
-    if (row == rows) solution_found.store(true);
-
+    if (row == rows) return true;
     int nextRow = (col == cols-1) ? row + 1 : row;
     int nextCol = (col == cols-1) ? 0 : col + 1;
-    
     for (Tile& tile : grid) {
-        pool.addJob([&tile, this, &solution_mutex, nextRow,  nextCol, row, col, &pool]() {
-            
-            if (!tile.used && isSafe(row, col, tile)) {
-                tile.used = true;
-                result[row][col] = tile;
-                solve_thread(nextRow, nextCol, pool, solution_mutex);
-                if (solution_found.load()) {
-                    std::lock_guard<std::mutex> lock(solution_mutex);
-                    return true;
-                } 
-                tile.used = false;
+        if (!tile.used && isSafe(row, col, tile)) {
+            tile.used = true;
+            this->result[row][col] = tile;
+            if(!pool.isAllThreadBusy()){
+                pool.addJob([&tile, this, &solution_mutex, &pool, &nextRow, &nextCol]() {
+                    solve_thread(nextRow, nextCol, pool, solution_mutex);
+                });
+            } else {
+                if (solve(nextRow, nextCol)) return true;
             }
-            return false;
-        });
+            // if thread without job add new
+            // Backtrack
+            tile.used = false;
+        }
     }
     return false;
 }
@@ -278,7 +275,7 @@ bool MacMahonGame::solve_thread() {
             if (!startingTile.used && isSafe(0, 0, startingTile)) {
                 startingTile.used = true;
                 this->result[0][0] = startingTile; // tente un truc avec une copie de résult
-                if (solve_thread(0, 1, pool, solution_mutex)) {
+                if (solve(0, 1)) {
                     //std::cout << "SOLUTION FOUND" << std::endl;
                     solution_found.store(true);
                     return;
