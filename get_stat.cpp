@@ -11,6 +11,8 @@
 #define YELLOW "\033[33m"
 #define BLUE "\033[34m"
 
+
+#include <cmath>
 #include <filesystem>
 #include <vector>
 #include <numeric>
@@ -19,6 +21,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <chrono>
+#include <map>
 #include "src/MacMahonGame/MacMahonGame.hpp"
 
 std::string PROGNAME="MacMahon Solver";
@@ -43,7 +46,7 @@ int main(int argc,char** argv){
     std::cout << "🤗  |Welcome in \033[1m" << PROGNAME << "\033[0m mode| 🤗" << std::endl; 
     print_release(); 
     std::cout << std::endl << std::endl;
-    
+    std::map<std::string, std::vector<double>> fileDurations;
     const std::string directoryPath = "./grid/";
     const int iterations = 1000;
     std::vector<std::string> allAverage;
@@ -53,6 +56,7 @@ int main(int argc,char** argv){
         std::vector<double> times; // To store the time taken for each iteration
 
         for (int i = 0; i < iterations; ++i) {
+            std::cout << "iterations " << i << std::endl;
             try {
                 MacMahonGame game(filePath);
                 auto start = std::chrono::high_resolution_clock::now();
@@ -64,22 +68,46 @@ int main(int argc,char** argv){
                 }
                 std::chrono::duration<long double, std::milli> duration = end - start;
                 std::cout <<  duration.count() << "ms" << std::endl;
-                if( result && duration.count()) times.push_back(duration.count());
+                if (!std::isnan(duration.count())) {
+                    if( result && duration.count()) times.push_back(duration.count());
+                    if( result && duration.count()) fileDurations[filePath].push_back(duration.count());
+                }
             } catch (const std::exception &e) {
                 failure("Error processing file "+ filePath + ": "+ e.what());
                 break;
             }
         }
        
-
-        long double averageTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+        
+        /*long double averageTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
         std::cout << averageTime << std::endl;
-        allAverage.push_back( "Average time for file " + filePath + ": " + std::to_string(averageTime) + " ms");
+        allAverage.push_back( "Average time for file " + filePath + ": " + std::to_string(averageTime) + " ms");*/
     }
     std::cout << "Ran " << std::to_string(iterations) << " test iterations " << std::endl;
-    for(std::string e : allAverage){
+    /*for(std::string e : allAverage){
         std::cout << e << std::endl;
+    }*/
+
+    // Write the durations to JSON file
+    std::ofstream outFile("duration.json");
+    if (!outFile) {
+        failure("Failed to open output file");
+        return -1;
     }
+
+    outFile << "{\n";
+    for (const auto& [path, durations] : fileDurations) {
+        outFile << "    \"" << path << "\": [";
+        for (size_t i = 0; i < durations.size(); ++i) {
+            outFile << durations[i];
+            if (i < durations.size() - 1) {
+                outFile << ", ";
+            }
+        }
+        outFile << "],\n";
+    }
+    outFile << "}\n";
+    outFile.close();
     return 0;
 }
 

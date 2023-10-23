@@ -21,9 +21,7 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::start() {
-    std::cout << "Starting thread pool" << std::endl;
     for(uint32_t i = 0; i < thread_number; i++) {
-        std::cout << "Adding thread " << i << std::endl;
         worker_thread.emplace_back(&ThreadPool::ThreadPoolEngine, this);
     }
 }
@@ -54,13 +52,14 @@ void ThreadPool::ThreadPoolEngine() {
             current_job = jobs_queue.front();
             jobs_queue.pop();
         }
+        busy_threads_count++;
         current_job();
+        busy_threads_count--;
     }
 }
 
 void ThreadPool::addJob(const std::function<void()>& new_job) {
     {
-        std::cout << "Job " << jobs_queue.size() <<  " added to thread pool" << std::endl;
         std::unique_lock<std::mutex> lock(mutex_queue);
         jobs_queue.push(new_job);
     }
@@ -70,4 +69,8 @@ void ThreadPool::addJob(const std::function<void()>& new_job) {
 bool ThreadPool::isPoolBusy() {
     std::unique_lock<std::mutex> lock(mutex_queue);
     return !jobs_queue.empty();
+}
+
+bool ThreadPool::isAllThreadBusy() {
+    return busy_threads_count.load() == thread_number;
 }
