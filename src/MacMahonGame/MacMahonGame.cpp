@@ -218,13 +218,7 @@ bool MacMahonGame::isBorderCorrect() {
 // Optimiser g++ 
 // Profiler gprof gnu
 bool MacMahonGame::solve(int row, int col) {
-
-    
     if (row == rows) return true;
-    //std::cout << "Solving " << row << ", " << col << std::endl;
-    /*if(row > 4){
-        
-    }*/
     int nextRow = (col == cols-1) ? row + 1 : row;
     int nextCol = (col == cols-1) ? 0 : col + 1;
     for (Tile& tile : grid) {
@@ -232,7 +226,6 @@ bool MacMahonGame::solve(int row, int col) {
             tile.used = true;
             this->result[row][col] = tile;
             if (solve(nextRow, nextCol)) return true;
-            // Backtrack
             tile.used = false;
         }
     }
@@ -274,9 +267,8 @@ bool MacMahonGame::solve_thread() {
             std::lock_guard<std::mutex> lock(solution_mutex); 
             if (!startingTile.used && isSafe(0, 0, startingTile)) {
                 startingTile.used = true;
-                this->result[0][0] = startingTile; // tente un truc avec une copie de résult
+                this->result[0][0] = startingTile;
                 if (solve(0, 1)) {
-                    //std::cout << "SOLUTION FOUND" << std::endl;
                     solution_found.store(true);
                     return;
                 }
@@ -287,6 +279,7 @@ bool MacMahonGame::solve_thread() {
     }
     
     pool.start();
+
     while (!solution_found.load()) {
         if (!pool.isPoolBusy()) {
             pool.stop();
