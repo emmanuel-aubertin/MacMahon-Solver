@@ -30,7 +30,9 @@ std::vector<char> MacMahonGame::convertToCharVector(const std::vector<std::strin
 
 MacMahonGame::MacMahonGame(const std::string &filename)
 {
-    solution_found = false;
+    solution_found_threadpool.store(false);
+    solution_found_parallel_recursion.store(false);
+    max_depth = 3;
     std::ifstream file(filename);
     std::string line;
     if (!std::getline(file, line))
@@ -246,34 +248,51 @@ void MacMahonGame::print(std::vector<Tile> inGrid)
  */
 bool MacMahonGame::isSafe(int row, int col, const Tile &tile)
 {
+    return isSafe(row, col, tile, result);
+}
+
+/**
+ * @brief Check if you place a Tile
+ *
+ * @param row index where you want to check
+ * @param col index where you want to check
+ * @param tile tile to check
+ * @param board on wich board you want to check
+ *
+ * @return true if you can place the tile
+ * @author Aubertin Emmanuel
+ */
+bool MacMahonGame::isSafe(int row, int col, const Tile &tile, const std::vector<std::vector<Tile>>& board)
+{
     // If the top-left tile is used, it will be our reference
-    if (result[0][0].used)
+    if (board[0][0].used)
     {
-        if (row == 0 && tile.top != result[0][0].top)
+        if (row == 0 && tile.top != board[0][0].top)
             return false;
 
-        if (row != 0 && tile.top != result[row - 1][col].bottom)
+        if (row != 0 && tile.top != board[row - 1][col].bottom)
             return false;
 
-        if (col == 0 && tile.left != result[0][0].top)
+        if (col == 0 && tile.left != board[0][0].top)
             return false;
 
-        if (col != 0 && tile.left != result[row][col - 1].right)
+        if (col != 0 && tile.left != board[row][col - 1].right)
             return false;
 
-        if (row == rows - 1 && tile.bottom != result[0][0].top)
+        if (row == rows - 1 && tile.bottom != board[0][0].top)
             return false;
 
-        if (col == cols - 1 && tile.right != result[0][0].top)
+        if (col == cols - 1 && tile.right != board[0][0].top)
             return false;
     }
 
-    if (!result[0][0].used && row == 0 && col == 0 && tile.top != tile.left)
+    if (!board[0][0].used && row == 0 && col == 0 && tile.top != tile.left)
     {
         return false;
     }
     return true;
 }
+
 
 /**
  * @brief Check if you place a Tile
@@ -299,6 +318,11 @@ bool MacMahonGame::isBorderCorrect()
             return false;
     }
     return true;
+}
+
+
+bool MacMahonGame::solve(){
+    return solve(0,0);
 }
 
 /**
@@ -345,13 +369,13 @@ bool MacMahonGame::solve_thread()
     for (Tile &startingTile : grid)
     {
         pool.addJob([&startingTile, this, &solution_mutex, &pool]()
-                    {
+            {
             std::lock_guard<std::mutex> lock(solution_mutex); 
             if (!startingTile.used && isSafe(0, 0, startingTile)) {
                 startingTile.used = true;
                 this->result[0][0] = startingTile;
                 if (solve(0, 1)) {
-                    solution_found.store(true);
+                    solution_found_threadpool.store(true);
                     return;
                 }
                 startingTile.used = false;
@@ -361,7 +385,78 @@ bool MacMahonGame::solve_thread()
 
     pool.start();
     pool.join();
-    return solution_found.load();
+    return solution_found_threadpool.load();
 }
 
 // ParallelRecursion
+
+bool MacMahonGame::solve_parallel()
+{
+    tasks.push(Task(0, 0, result, grid));
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < std::thread::hardware_concurrency(); i++) {
+        threads.emplace_back(&MacMahonGame::parallelRecursionThreadEngine, this);
+    }
+
+    // Wait for threads to complete
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    return solution_found_parallel_recursion.load();
+}
+
+bool MacMahonGame::solve_parallel(const int& max_depth)
+{
+    this->max_depth = max_depth;
+    return solve_parallel();
+}
+
+void MacMahonGame::parallelRecursion(Task inTask, int depth)
+{
+    
+    if(solution_found_parallel_recursion.load()){
+        std:cout << solution_found_parallel_recursion.load() << " ";
+        return;
+    }
+    if(inTask.row == rows){
+        result = inTask.result;
+        solution_found_parallel_recursion.store(true);
+        return;
+    } 
+
+    int nextRow = (inTask.col == cols - 1) ? inTask.row + 1 : inTask.row;
+    int nextCol = (inTask.col == cols - 1) ? 0 : inTask.col + 1;
+
+    for (Tile &tile : inTask.grid)
+    {
+        if(!tile.used && isSafe(inTask.row, inTask.col, tile, inTask.result)){
+            tile.used = true;
+            inTask.result[inTask.row][inTask.col] = tile;
+            if (depth < max_depth) {
+                std::lock_guard<std::mutex> lock(taskMutex);
+                tasks.push(Task(nextRow, nextCol, inTask.result, inTask.grid));
+                continue;
+            }
+            parallelRecursion(Task(nextRow, nextCol, inTask.result, inTask.grid), depth + 1 );
+            if(!solution_found_parallel_recursion.load()) tile.used = false;
+        }
+    }
+    result = inTask.result;
+}
+
+void MacMahonGame::parallelRecursionThreadEngine()
+{
+    while (!solution_found_parallel_recursion.load() || !tasks.empty()) {
+        Task currentTask;
+        {
+            std::lock_guard<std::mutex> lock(taskMutex);
+            if (tasks.empty()) return;
+            currentTask = tasks.front();
+            tasks.pop();
+        }
+
+        parallelRecursion(currentTask, 0);
+    }
+}   

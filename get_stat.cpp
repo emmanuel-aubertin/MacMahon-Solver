@@ -61,7 +61,7 @@ int main(int argc,char** argv){
             try {
                 MacMahonGame game(filePath);
                 auto start = std::chrono::high_resolution_clock::now();
-                bool result = game.solve(0, 0); // Assuming the puzzle starts from (0, 0)
+                bool result = game.solve_parallel(); // Assuming the puzzle starts from (0, 0)
                 auto end = std::chrono::high_resolution_clock::now();
                 if(!printed){
                     game.printResult();
