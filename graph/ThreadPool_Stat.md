@@ -1,6 +1,6 @@
 # ThreadPool solver
 
-Every time is in microseconds
+Every time values are in microseconds.
 
 ## Statistics for ./grid/4x4.txt:
 - mean: 0.13

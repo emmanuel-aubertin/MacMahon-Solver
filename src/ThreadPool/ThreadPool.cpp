@@ -17,7 +17,7 @@ ThreadPool::ThreadPool(uint32_t thread_number) {
 }
 
 ThreadPool::~ThreadPool() {
-    stop();
+    join();
 }
 
 void ThreadPool::start() {
@@ -26,7 +26,7 @@ void ThreadPool::start() {
     }
 }
 
-void ThreadPool::stop() {
+void ThreadPool::join() {
     {
         std::unique_lock<std::mutex> lock(mutex_queue);
         stop_thread = true;
