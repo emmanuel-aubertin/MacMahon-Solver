@@ -49,6 +49,7 @@ int main(int argc,char** argv){
     std::map<std::string, std::vector<double>> fileDurations;
     const std::string directoryPath = "./grid/";
     const int iterations = 1000;
+
     std::vector<std::string> allAverage;
     for (const auto & entry : std::filesystem::directory_iterator(directoryPath)) {
         std::string filePath = entry.path().string();
@@ -60,7 +61,7 @@ int main(int argc,char** argv){
             try {
                 MacMahonGame game(filePath);
                 auto start = std::chrono::high_resolution_clock::now();
-                bool result = game.solve_thread(); // Assuming the puzzle starts from (0, 0)
+                bool result = game.solve(0, 0); // Assuming the puzzle starts from (0, 0)
                 auto end = std::chrono::high_resolution_clock::now();
                 if(!printed){
                     game.printResult();
@@ -70,25 +71,15 @@ int main(int argc,char** argv){
                 std::cout <<  duration.count() << "ms" << std::endl;
                 if (!std::isnan(duration.count())) {
                     if( result && duration.count()) times.push_back(duration.count());
-                    if( result && duration.count()) fileDurations[filePath].push_back(duration.count());
                 }
+                fileDurations[filePath].push_back(duration.count());
             } catch (const std::exception &e) {
                 failure("Error processing file "+ filePath + ": "+ e.what());
                 break;
             }
         }
-       
-        
-        /*long double averageTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
-        std::cout << averageTime << std::endl;
-        allAverage.push_back( "Average time for file " + filePath + ": " + std::to_string(averageTime) + " ms");*/
     }
     std::cout << "Ran " << std::to_string(iterations) << " test iterations " << std::endl;
-    /*for(std::string e : allAverage){
-        std::cout << e << std::endl;
-    }*/
-
-    // Write the durations to JSON file
     std::ofstream outFile("duration.json");
     if (!outFile) {
         failure("Failed to open output file");
