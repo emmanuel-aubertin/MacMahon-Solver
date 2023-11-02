@@ -22,7 +22,7 @@ class ThreadPool
         ~ThreadPool();
         mutex mutex_queue;
         ThreadPool(uint32_t);
-        void stop();
+        void join();
         void start();
         void addJob(const std::function<void()>&);
         bool isPoolBusy();

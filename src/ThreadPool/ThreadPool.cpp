@@ -17,7 +17,7 @@ ThreadPool::ThreadPool(uint32_t thread_number) {
 }
 
 ThreadPool::~ThreadPool() {
-    stop();
+    join();
 }
 
 void ThreadPool::start() {
@@ -26,7 +26,7 @@ void ThreadPool::start() {
     }
 }
 
-void ThreadPool::stop() {
+void ThreadPool::join() {
     {
         std::unique_lock<std::mutex> lock(mutex_queue);
         stop_thread = true;
@@ -44,7 +44,7 @@ void ThreadPool::ThreadPoolEngine() {
         {
             std::unique_lock<std::mutex> lock(mutex_queue);
             mutex_condition.wait(lock, [this] {
-                return !jobs_queue.empty() || stop_thread;
+                return !jobs_queue.empty() || stop_thread.load();
             });
             if(stop_thread && jobs_queue.empty()) {
                 return;
