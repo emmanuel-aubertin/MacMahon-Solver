@@ -44,7 +44,7 @@ void ThreadPool::ThreadPoolEngine() {
         {
             std::unique_lock<std::mutex> lock(mutex_queue);
             mutex_condition.wait(lock, [this] {
-                return !jobs_queue.empty() || stop_thread;
+                return !jobs_queue.empty() || stop_thread.load();
             });
             if(stop_thread && jobs_queue.empty()) {
                 return;
