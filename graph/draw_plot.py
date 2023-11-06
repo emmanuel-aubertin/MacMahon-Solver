@@ -1,8 +1,10 @@
+# This script is here to create graph from compute time of the solver
+
 import matplotlib.pyplot as plt
 import numpy as np
 import json
 
-# Load the data from data.json
+# Load the data from duration.json
 with open("duration.json", "r") as file:
     data = json.load(file)
 
@@ -26,6 +28,7 @@ for grid, values in data.items():
         print(f"{key}: {value:.2f}")
     print("-----------------------------")
 
+# Graph label definition
 plt.xlabel('Iterations')
 plt.ylabel('Time (ms)')
 plt.legend()

@@ -27,12 +27,17 @@ std::string COPYRIGHT="(c) 2023 "+ AUTHOR + " from https://athomisos.fr";
 bool VERBOSE = false;
 
 
-void print_release() {
-    std::cout << RELEASE << std::endl << COPYRIGHT << std::endl;
-}
+auto print_release = [] {
+    std::cout << RELEASE << '\n'
+              << COPYRIGHT << '\n';
+};
+
+auto failure = [](std::string_view message) {
+    std::cerr << "❌ Error: " << message << " ❌\n";
+};
 
 
-void print_usage() {
+auto print_usage = []()  {
         std::cout << std::endl 
         << PROGNAME << " by " << AUTHOR << std::endl 
         << "\033[1mUsage: \033[0m"<< FILE_NAME <<" | [-h | --help] | [-v | --version] | [-V | --verbose] & [-f | --file] filename" << std::endl
@@ -40,22 +45,16 @@ void print_usage() {
         << "          -v            Version" << std::endl
         << "          -v            Verbose" << std::endl
         << "          -f filename  'number.txt' by default" << std::endl;
-}
+};
 
 
-void print_help() {
+auto print_help  = []()  {
         print_release();
         std::cout << std::endl;
         print_usage();
         std::cout << std::endl << std::endl;
         exit(0);
-}
-
-
-void failure(std::string message){
-    std::cerr << "❌ \033[1;31m Error :\033[0m " << message << " ❌" << std::endl;
-    exit(-1);
-}
+};
 
 int main(int argc,char** argv){
     std::cout << "🤗  |Welcome in \033[1m" << PROGNAME << "\033[0m mode| 🤗" << std::endl; print_release(); std::cout << std::endl << std::endl;
@@ -98,7 +97,7 @@ int main(int argc,char** argv){
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
 
-    std::cout << "-----------------------------------------------------------------------------------" << std::endl << std::endl;
+    std::cout << "-----------------------------------------------------------------------------------" << std::endl;
 
     if (result){
         myGame.printResult();
@@ -106,7 +105,7 @@ int main(int argc,char** argv){
         std::cout << "No solution found !" << std::endl;
     }
 
-    std::cout << "Time taken by myGame.solve(0, 0): " << duration.count() << " microseconds" << std::endl;
+    std::cout << "Time taken by myGame.solve(0, 0) (for " << filename << "): " << duration.count() << " microseconds" << std::endl;
 
     return 0;
 }
