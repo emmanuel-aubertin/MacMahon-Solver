@@ -20,13 +20,15 @@ def basic_statistics(arr):
     }
 
 plt.figure(figsize=(10, 6))
+print("# [Name] solver")
+
 for grid, values in data.items():
     plt.plot(values, label=grid)
     stats = basic_statistics(values)
-    print(f"Statistics for {grid}:")
+    print(f"## Statistics for {grid}:")
     for key, value in stats.items():
-        print(f"{key}: {value:.2f}")
-    print("-----------------------------")
+        print(f"- {key}: {value:.2f}")
+    print("\n")
 
 # Graph label definition
 plt.xlabel('Iterations')

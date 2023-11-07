@@ -32,6 +32,10 @@ To run the MacMahon Game Solver, provide a text file with the game configuration
 ```sh
 ./MacMahonSolver -f ./grid/6x6.txt
 ```
+Output example for this one :
+
+![6x6 grid solution](./graph/SEQ_6x6_result.png)
+
 
 If you need more launch option you can use `--help`.
 
@@ -48,6 +52,31 @@ R G G R
 ....
 ```
 
+### Compute Statistics
+
+The initial step is to compile and execute `get_stat.cpp`, which runs the solver 1000 times for each grid. This C++ program will save all the timings in `graph/duration.json`.
+
+```sh
+make stat
+```
+
+To generate a beautiful graph like the one below, you will need Python 3 and pip. To install the dependencies:
+
+```sh
+pip3 install matplotlib numpy
+```
+
+Afterwards, you need to launch `draw_plot.py`:
+
+```sh
+# Go to the graph folder
+cd graph
+
+# Run the plot script
+python3 draw_plot.py
+```
+
+
 ### License
 
 This project is licensed under the GNU License - see the [LICENSE](LICENSE) file for details.
@@ -56,3 +85,9 @@ This project is licensed under the GNU License - see the [LICENSE](LICENSE) file
 
 Inpiration & understanding threadpool in c++ see [stackoverflow](https://stackoverflow.com/questions/15752659/thread-pooling-in-c11)
 Understanding why use condition_variable read polytechnique [documentation](https://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/thread/condition_variable.html#:~:text=The%20condition_variable%20class%20is%20a,a%20spurious%20wakeup%20occurs)
+
+### Contact
+
+Feel to contact me on :
+ - [LinkedIn](https://www.linkedin.com/in/emmanuel-aubertin/)
+ - Discord : aTHO_
