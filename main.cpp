@@ -40,10 +40,13 @@ auto failure = [](std::string_view message) {
 auto print_usage = []()  {
         std::cout << std::endl 
         << PROGNAME << " by " << AUTHOR << std::endl 
-        << "\033[1mUsage: \033[0m"<< FILE_NAME <<" | [-h | --help] | [-v | --version] | [-V | --verbose] & [-f | --file] filename" << std::endl
+        << "\033[1mUsage: \033[0m"<< FILE_NAME <<" | [-h | --help] | [-v | --version] | [-V | --verbose] | [-s | --seq] | [-t | --threadpool] | [-p | --parallel-recursion] & [-f | --file] filename" << std::endl
         << "          -h            help" << std::endl
         << "          -v            Version" << std::endl
         << "          -v            Verbose" << std::endl
+        << "          -s            Execute the sequential solver (by default)" << std::endl
+        << "          -t            Execute the threadpool solver" << std::endl
+        << "          -p            Execute the parallel recusion solver" << std::endl
         << "          -f filename  'number.txt' by default" << std::endl;
 };
 
@@ -59,6 +62,8 @@ auto print_help  = []()  {
 int main(int argc,char** argv){
     std::cout << "🤗  |Welcome in \033[1m" << PROGNAME << "\033[0m mode| 🤗" << std::endl; print_release(); std::cout << std::endl << std::endl;
     std::string filename = "";
+    int solver = 0;
+    // Arg parser
     if(argc < 2) // number of arg minimum 
 		failure("One argument required. \n\t-h for help");
 
@@ -78,6 +83,12 @@ int main(int argc,char** argv){
                 failure("File not found: " + filename);
             }
             std::cout << " ✔ | \033[1mFile successfuly load\033[0m | ✔ " << std::endl << std::endl;
+        } else if (!strcmp(argv[i] , "-s") || !strcmp(argv[i] , "--seq")){
+            solver = 0;
+        } else if (!strcmp(argv[i] , "-t") || !strcmp(argv[i] , "--threadpool")){
+            solver = 1;
+        } else if (!strcmp(argv[i] , "-p") || !strcmp(argv[i] , "--parallel-recursion")){
+            solver = 2;
         } else { // ALL OTHER ARGUMENT
             print_usage();
             std::string arg = argv[i];
@@ -86,13 +97,26 @@ int main(int argc,char** argv){
         }
     }
 
+
+    /**
+     * Begining of the main
+     */
     MacMahonGame myGame =  MacMahonGame(filename);
 
     myGame.print();
     
     auto start = std::chrono::high_resolution_clock::now();
 
-    bool result = myGame.solve_parallel();
+    bool result = false;
+    if(solver == 0){
+        result = myGame.solve();
+    }
+    if(solver == 1){
+        result = myGame.solve_thread();
+    }
+    if(solver == 2){
+        result = myGame.solve_parallel();
+    }
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
@@ -103,9 +127,9 @@ int main(int argc,char** argv){
         myGame.printResult();
     } else {
         std::cout << "No solution found !" << std::endl;
-    }
+    } 
 
-    std::cout << "Time taken by myGame.solve(0, 0) (for " << filename << "): " << duration.count() << " microseconds" << std::endl;
+    std::cout << "Time taken by solver (for " << filename << "): " << duration.count() << " microseconds" << std::endl;
 
     return 0;
 }
