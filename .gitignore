@@ -9,3 +9,5 @@ MacMahon
 *.bin
 
 *.gch
+
+*.json
