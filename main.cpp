@@ -62,7 +62,7 @@ auto print_help  = []()  {
 int main(int argc,char** argv){
     std::cout << "🤗  |Welcome in \033[1m" << PROGNAME << "\033[0m mode| 🤗" << std::endl; print_release(); std::cout << std::endl << std::endl;
     std::string filename = "";
-    int algo = 0;
+    int solver = 0;
     // Arg parser
     if(argc < 2) // number of arg minimum 
 		failure("One argument required. \n\t-h for help");
@@ -84,11 +84,11 @@ int main(int argc,char** argv){
             }
             std::cout << " ✔ | \033[1mFile successfuly load\033[0m | ✔ " << std::endl << std::endl;
         } else if (!strcmp(argv[i] , "-s") || !strcmp(argv[i] , "--seq")){
-            algo = 0;
+            solver = 0;
         } else if (!strcmp(argv[i] , "-t") || !strcmp(argv[i] , "--threadpool")){
-            algo = 1;
+            solver = 1;
         } else if (!strcmp(argv[i] , "-p") || !strcmp(argv[i] , "--parallel-recursion")){
-            algo = 2;
+            solver = 2;
         } else { // ALL OTHER ARGUMENT
             print_usage();
             std::string arg = argv[i];
@@ -108,13 +108,13 @@ int main(int argc,char** argv){
     auto start = std::chrono::high_resolution_clock::now();
 
     bool result = false;
-    if(algo == 0){
+    if(solver == 0){
         result = myGame.solve();
     }
-    if(algo == 1){
+    if(solver == 1){
         result = myGame.solve_thread();
     }
-    if(algo == 2){
+    if(solver == 2){
         result = myGame.solve_parallel();
     }
 
@@ -127,7 +127,7 @@ int main(int argc,char** argv){
         myGame.printResult();
     } else {
         std::cout << "No solution found !" << std::endl;
-    }
+    } 
 
     std::cout << "Time taken by solver (for " << filename << "): " << duration.count() << " microseconds" << std::endl;
 
