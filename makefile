@@ -15,8 +15,14 @@ test:   compiler
 	./out.bin -f grid/4x4.txt
 	@printf "\e[32m\tDONE\e[0m\n"
 
-stat: 
+compile_stat: 
 	@printf "\e[32m--------| \e[1;32mCompilation of all your .cpp\e[0m\e[32m |--------\e[0m\n\n"
 	g++ -std=c++17 -O3 get_stat.cpp src/MacMahonGame/MacMahonGame.cpp src/ThreadPool/ThreadPool.cpp -o out.bin
 	@printf "\e[32m\tDONE\e[0m\n"
+
+stat: compile_stat
+	@printf "\e[32m--------| \e[1;32mCompilation of all your .cpp\e[0m\e[32m |--------\e[0m\n\n"
+	./out.bin
+	@printf "\e[32m\tDONE\e[0m\n"
+	
 .PHONY = all clean

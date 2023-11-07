@@ -52,7 +52,8 @@ int main(int argc, char **argv) {
             {
                 MacMahonGame game(filePath);
                 auto start = std::chrono::high_resolution_clock::now();
-                bool result = game.solve_parallel(); // Assuming the puzzle starts from (0, 0)
+                // You can change the solver if you want
+                bool result = game.solve();
                 auto end = std::chrono::high_resolution_clock::now();
                 if (!printed)
                 {
@@ -76,7 +77,7 @@ int main(int argc, char **argv) {
         }
     }
     std::cout << "Ran " << std::to_string(iterations) << " test iterations " << std::endl;
-    std::ofstream outFile("duration.json");
+    std::ofstream outFile("./graph/duration.json");
     if (!outFile)
     {
         failure("Failed to open output file");
