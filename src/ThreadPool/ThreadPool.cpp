@@ -1,6 +1,6 @@
 // Inpiration scource : https://stackoverflow.com/questions/15752659/thread-pooling-in-c11
 // Understanding condition_variable : https://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/thread/condition_variable.html#:~:text=The%20condition_variable%20class%20is%20a,a%20spurious%20wakeup%20occurs
-// Is used to block multiple thread at the same time. Usefull to use it when you find a solution, you can stop every thread easier.
+// It is used to block multiple threads simultaneously. Useful for when a solution is found, allowing you to stop all threads more easily.
 
 #include <iostream>
 #include <queue>
