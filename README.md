@@ -34,7 +34,7 @@ To run the MacMahon Game Solver, provide a text file with the game configuration
 ```
 Output example for this one :
 
-![6x6 grid solution](./grid/SEQ_6x6_result.png)
+![6x6 grid solution](./graph/SEQ_6x6_result.png)
 
 
 If you need more launch option you can use `--help`.
