@@ -34,7 +34,7 @@ for grid, values in data.items():
 plt.xlabel('Iterations')
 plt.ylabel('Time (ms)')
 plt.legend()
-plt.title('Solving process time for sequential')
+plt.title('Solving process time for paralle recursion')
 plt.grid(True)
 plt.tight_layout()
 plt.show()

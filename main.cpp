@@ -115,7 +115,7 @@ int main(int argc,char** argv){
         result = myGame.solve_thread();
     }
     if(solver == 2){
-        result = myGame.solve_parallel();
+        result = myGame.solve_parallel(500);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
