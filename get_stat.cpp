@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
                 MacMahonGame game(filePath);
                 auto start = std::chrono::high_resolution_clock::now();
                 // You can change the solver if you want
-                bool result = game.solve();
+                bool result = game.solve_parallel(500);
                 auto end = std::chrono::high_resolution_clock::now();
                 if (!printed)
                 {
